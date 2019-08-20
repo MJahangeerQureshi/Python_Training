@@ -17,12 +17,28 @@ def Show_File():
     f.close()
     
 def Update_Content():
-    fname = input("please enter the filename to update : ")
-    entered_data = input("Please enter your data: ")
-    f = open(fname+".txt", "w")
-    f.write(entered_data)
-    f.close()
-    print("File update \n")
+    while True:
+        user_preference = input("Do you wish to append or overwrite \n 1 Overwrite \n 2 Append \n")
+        if user_preference == "1":
+            fname = input("please enter the filename to update : ")
+            entered_data = input("Please enter your data: ")
+            f = open(fname+".txt", "w")
+            f.write(entered_data)
+            f.close()
+            print("File updated \n")
+            break
+        elif user_preference == "2":
+            fname = input("please enter the filename to update : ")
+            entered_data = input("Please enter your data: ")
+            f = open(fname+".txt", "a")
+            f.write(entered_data)
+            f.close()
+            print("File updated \n")
+            break
+        elif user_preference == "0":
+            break
+        else:
+            print("Invalid input, please choose either 1 or 2, if you wish to enter 0 \n")
     
 def Search_String():
     fname = input("please enter the filename to show : ")
