@@ -65,9 +65,9 @@ def Replace_Word():
     f.close()
     
     original_string = input("please enter the string you wish to replace : ")
-    replacment_string = input("please enter the string you wish to replace it with : ")
+    replacement_string = input("please enter the string you wish to replace it with : ")
     
-    string_data.replace(original_string, replacment_string)
+    string_data = string_data.replace(original_string, replacement_string)
     
     f = open(fname+".txt", "w")
     f.write(string_data)
