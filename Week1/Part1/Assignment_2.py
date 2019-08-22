@@ -1,22 +1,30 @@
 import os
 
-def Create_File():
+def CreateFile():
+    'Create a text file'
+    
     fname = input("please enter the filename to create : ")
     os.mknod(fname+".txt")
     print("File created \n")
     
-def Remove_File():
+def RemoveFile():
+    'Delete a text file'
+    
     fname = input("please enter the filename to delete : ")
     os.remove(fname+".txt")
     print("File removed \n")
     
-def Show_File():
+def ShowFile():
+    'Show the text file'
+    
     fname = input("please enter the filename to show : ")
     f = open(fname+".txt",mode='r')
     print(f.read())
     f.close()
     
-def Update_Content():
+def UpdateContent():
+    'Append or Overwrite the text file'
+    
     while True:
         user_preference = input("Do you wish to append or overwrite \n 1 Overwrite \n 2 Append \n")
         if user_preference == "1":
@@ -40,7 +48,9 @@ def Update_Content():
         else:
             print("Invalid input, please choose either 1 or 2, if you wish to enter 0 \n")
     
-def Search_String():
+def SearchString():
+    'Search for a phrase in text'
+    
     fname = input("please enter the filename to show : ")
     f = open(fname+".txt",mode='r')
     string_data = f.read()
@@ -58,7 +68,9 @@ def Search_String():
     
     string_data[lower_index:upper_index]
     
-def Replace_Word():
+def ReplaceWord():
+    'Replace a phrase in a string'
+    
     fname = input("please enter the filename to show : ")
     f = open(fname+".txt",mode='r')
     string_data = f.read()
@@ -88,21 +100,23 @@ while True:
         0. Exit Program
         \n
         '''))
+        
         if user_selection==0:
             print('Exiting Program')
             break
-        elif user_selection==1:
-            Create_File()
-        elif user_selection==2:
-            Remove_File()
-        elif user_selection==3:
-            Show_File()
-        elif user_selection==4:
-            Update_Content()
-        elif user_selection==5:
-            Search_String()
-        elif user_selection==6:
-            Replace_Word()
+        elif user_selection == 1:
+            CreateFile()
+        elif user_selection == 2:
+            RemoveFile()
+        elif user_selection == 3:
+            ShowFile()
+        elif user_selection == 4:
+            UpdateContent()
+        elif user_selection == 5:
+            SearchString()
+        elif user_selection == 6:
+            ReplaceWord()
+        
     except Exception as  e:
         print(e)
         pass
