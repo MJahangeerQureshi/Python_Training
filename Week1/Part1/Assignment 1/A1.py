@@ -2,7 +2,7 @@ def CreateTask(Tasks):
     '''
     Create task can add a task at the end of the list or between any two tasks
     '''
-    if len(Tasks)==0:
+    if len(Tasks) == 0:
         task_name = input("What task do you wish to insert, Task name: ")
         Tasks.append(task_name)
     else:
@@ -22,7 +22,7 @@ def UpdateTask(Tasks):
     else:    
         ListTasks(Tasks)
         
-        task_no = input("Which task do you wish to update, Task number: ")
+        task_no = int(input("Which task do you wish to update, Task number: "))
         task_name = input("Whats the Task name, Task name: ")
         Tasks[task_no] = task_name
     return Tasks
