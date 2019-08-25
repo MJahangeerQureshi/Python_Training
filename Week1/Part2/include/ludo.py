@@ -9,7 +9,8 @@ class Board():
         '''
         Random generator based upon probability distribution
         '''
-        weighted_random = ['1'] * 25 +['2'] * 10 +['3'] * 10 +['4'] * 10 + ['5'] * 10 + ['6'] * 35
+        weighted_random = ['6']
+        #weighted_random = ['1'] * 25 +['2'] * 10 +['3'] * 10 +['4'] * 10 + ['5'] * 10 + ['6'] * 35
         roll_number = random.choice(weighted_random)
         print("Rolling dice ......... "+roll_number+"\n")
         return roll_number
@@ -17,7 +18,7 @@ class Board():
     def position_unsafe(self, position):
         '''
         Check if the space is safe for the piece
-        Spaces that ere multiples of 5 are safe
+        Spaces that are multiples of 5 are safe
         '''
         if position == 1:
             return True
@@ -28,6 +29,9 @@ class Board():
                 return True
 
     def player_still_in_keep(self, player):
+        '''
+        Returns a boolean value signifying if the player has started the game or not
+        '''
         for piece in player:
             if piece.get_piece_position() != -1:
                 return False
@@ -35,19 +39,82 @@ class Board():
                 pass
         return True
 
+    def alter_board(self, ludo_board, piece_position, piece_name, overlap=None):
+        if overlap == 'A' or overlap == 'C':
+            return ludo_board.replace(piece_name, piece_name.lower()).replace(overlap, overlap+piece_name)
+        else:
+            board_position = f'{int(piece_position%46):02d}'
+            return ludo_board.replace(piece_name, piece_name.lower()).replace(board_position, "_"+piece_name)
+
     def show_board(self, players):
         '''
-        Display the condition of the Board.
+        Displays the Board.
         '''
+        ludo_board = '''
+                        23|24                   
+                        22|25                   
+                        21|26                   
+                        20|27                   
+                        19|28                   
+                        18|29                   
+      13  14  15   16   17|30  31  32   33   34
+      12------------------|-------------------35
+      11  10  09   08   07|40  39  38   37   36
+                        06|41                   
+                        05|42                   
+         1.A   2.B      04|43    1.C    2.D       
+                        03|44                   
+                        02|45                   
+                        01|00                   
+
+        '''
+
         for player_number in range(len(players)):
             for piece_number in range(len(players[player_number])):
-                position = players[player_number][piece_number].get_piece_position()
-                if position == -1:
-                    print("              Player",player_number+1,"Piece",piece_number+1,"is at position : Keep\n")
+                piece_position = players[player_number][piece_number].get_piece_position()
+                
+                if player_number == 0 and piece_number == 0:
+                    if piece_position == -1:
+                        pass
+
+                    else:
+                        ludo_board = self.alter_board(ludo_board, piece_position, 'A')
+
+                elif player_number == 0 and piece_number == 1:
+                    if piece_position == -1:
+                        pass
+
+                    else:
+                        if players[0][0].get_piece_position == piece_position:
+                            ludo_board = self.alter_board(ludo_board, piece_position, 'B', 'A')
+                        else:
+                            ludo_board = self.alter_board(ludo_board, piece_position, 'B')
+
+
+                elif player_number == 1 and piece_number == 0:
+                    if piece_position == -1:
+                        pass
+
+                    else:
+                        ludo_board = self.alter_board(ludo_board, piece_position, 'C')
+
                 else:
-                    print("              Player",player_number+1,"Piece",piece_number+1,"is at position : ",position,"\n")    
+                    if piece_position == -1:
+                        pass
+
+                    else:
+                        if players[0][0].get_piece_position == piece_position:
+                            ludo_board = self.alter_board(ludo_board, piece_position, 'D', 'C')
+                        else:
+                            ludo_board = self.alter_board(ludo_board, piece_position, 'D')
+
+        print(ludo_board)    
 
     def play_turn(self, player_number, players):
+        '''
+        A player turn is computed over here including the dice roll as 
+        well as multiple turns in the case of a luck 6 roll
+        '''
         repeat_turn = True
         
         while repeat_turn:
@@ -79,6 +146,9 @@ class Board():
         return True
 
     def move_player_piece(self, player_number, players, roll):
+        '''
+        A helper function specially move the piece in response to a dice roll
+        '''
         self.show_board(players)
 
         while True:
@@ -91,7 +161,10 @@ class Board():
                 if piece_initial_position == -1:
                     if roll == '6':
                         print('Moving out a new piece :)')
-                        players[player_number][piece_number].set_piece_position(1)
+                        if player_number == 0:
+                            players[player_number][piece_number].set_piece_position(1)
+                        else:
+                            players[player_number][piece_number].set_piece_position(36)
                         return False
                     else:
                         print('Cant do that, that piece is still in the keep\n')
@@ -107,6 +180,10 @@ class Board():
                 print('Invalid entry, choose either 1 or 2\n')
 
     def check_if_any_piece_captured(self, player_number, players, new_position):
+        '''
+        This functions verifies if 2 opposing pieces occupy the same space
+        if so the player with the presiding piece is returned to the keep
+        '''
         for piece_number in range(len(players[1 - player_number])):
             if new_position == players[1 - player_number][piece_number].get_piece_position() and self.position_unsafe(new_position):
                 print("Player "+str((1 - player_number)+1)+"s, piece "+str(piece_number+1)+" was captured and returned to the keep\n")
@@ -121,6 +198,9 @@ class Ludo(Board):
         pass
 
     def initialize_players(self):
+        '''
+        Initializes value for the players
+        '''
         p1 = Piece(1,1)
         p2 = Piece(2,1)
         p3 = Piece(1,2)
@@ -132,6 +212,9 @@ class Ludo(Board):
         return players
 
     def Run(self):
+        '''
+        The run function starts the game until the user says so
+        '''
         players = self.initialize_players()
         results = True
         while results:
