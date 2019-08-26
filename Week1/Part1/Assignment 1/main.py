@@ -1,6 +1,6 @@
-from A1 import CreateTask, UpdateTask, DeleteTask, ListTasks
+from A1 import create_task, update_task, delete_task, list_tasks
 
-Tasks=[]
+Tasks={}
 
 while True:
     try:
@@ -17,13 +17,13 @@ while True:
             print('Exiting Program')
             break
         elif user_selection == 1:
-            Tasks = CreateTask(Tasks)
+            Tasks = create_task(Tasks)
         elif user_selection == 2:
-            Tasks = ListTasks(Tasks)
+            Tasks = list_tasks(Tasks)
         elif user_selection == 3:
-            Tasks = UpdateTask(Tasks)
+            Tasks = update_task(Tasks)
         elif user_selection == 4:
-            Tasks = DeleteTask(Tasks)
+            Tasks = delete_task(Tasks)
     
     except Exception as  e:
         print(e)

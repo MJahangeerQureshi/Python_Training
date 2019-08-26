@@ -9,7 +9,7 @@ class Board():
         '''
         Random generator based upon probability distribution
         '''
-        weighted_random = ['6']
+        weighted_random = ['6'] + ['1']
         #weighted_random = ['1'] * 25 +['2'] * 10 +['3'] * 10 +['4'] * 10 + ['5'] * 10 + ['6'] * 35
         roll_number = random.choice(weighted_random)
         print("Rolling dice ......... "+roll_number+"\n")
@@ -39,9 +39,16 @@ class Board():
                 pass
         return True
 
-    def alter_board(self, ludo_board, piece_position, piece_name, overlap=None):
-        if overlap == 'A' or overlap == 'C':
-            return ludo_board.replace(piece_name, piece_name.lower()).replace(overlap, overlap+piece_name)
+    def alter_board(self, ludo_board, piece_position, piece_name, overlap=False):
+        if overlap:
+            if piece_name == "A":
+                return ludo_board.replace(piece_name, piece_name.lower()).replace("_A", "AB")
+            elif piece_name == "B":
+                return ludo_board.replace(piece_name, piece_name.lower()).replace("_B", "AB")
+            elif piece_name == "C":
+                return ludo_board.replace(piece_name, piece_name.lower()).replace("_C", "CD")
+            else:
+                return ludo_board.replace(piece_name, piece_name.lower()).replace("_D", "CD")
         else:
             board_position = f'{int(piece_position%46):02d}'
             return ludo_board.replace(piece_name, piece_name.lower()).replace(board_position, "_"+piece_name)
@@ -78,17 +85,16 @@ class Board():
                         pass
 
                     else:
-                        ludo_board = self.alter_board(ludo_board, piece_position, 'A')
+                        overlap = players[0][1].get_piece_position == piece_position
+                        ludo_board = self.alter_board(ludo_board, piece_position, 'A', overlap)
 
                 elif player_number == 0 and piece_number == 1:
                     if piece_position == -1:
                         pass
 
                     else:
-                        if players[0][0].get_piece_position == piece_position:
-                            ludo_board = self.alter_board(ludo_board, piece_position, 'B', 'A')
-                        else:
-                            ludo_board = self.alter_board(ludo_board, piece_position, 'B')
+                        overlap = players[0][0].get_piece_position == piece_position
+                        ludo_board = self.alter_board(ludo_board, piece_position, 'B', overlap)
 
 
                 elif player_number == 1 and piece_number == 0:
@@ -96,17 +102,16 @@ class Board():
                         pass
 
                     else:
-                        ludo_board = self.alter_board(ludo_board, piece_position, 'C')
+                        overlap = players[1][1].get_piece_position == piece_position
+                        ludo_board = self.alter_board(ludo_board, piece_position, 'C', overlap)
 
                 else:
                     if piece_position == -1:
                         pass
 
                     else:
-                        if players[0][0].get_piece_position == piece_position:
-                            ludo_board = self.alter_board(ludo_board, piece_position, 'D', 'C')
-                        else:
-                            ludo_board = self.alter_board(ludo_board, piece_position, 'D')
+                        overlap = players[1][0].get_piece_position == piece_position
+                        ludo_board = self.alter_board(ludo_board, piece_position, 'D', overlap)
 
         print(ludo_board)    
 
