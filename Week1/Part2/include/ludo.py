@@ -9,8 +9,7 @@ class Board():
         '''
         Random generator based upon probability distribution
         '''
-        weighted_random = ['6'] + ['1']
-        #weighted_random = ['1'] * 25 +['2'] * 10 +['3'] * 10 +['4'] * 10 + ['5'] * 10 + ['6'] * 35
+        weighted_random = ['1'] * 25 +['2'] * 10 +['3'] * 10 +['4'] * 10 + ['5'] * 10 + ['6'] * 35
         roll_number = random.choice(weighted_random)
         print("Rolling dice ......... "+roll_number+"\n")
         return roll_number

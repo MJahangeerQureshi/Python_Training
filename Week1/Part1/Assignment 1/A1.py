@@ -20,7 +20,8 @@ def create_task(Tasks):
             except ValueError:
                 print("Please enter a valid number for the task")
     return Tasks
-    
+
+
 def update_task(Tasks):
     '''
     For update a task select a task from the list and update it
@@ -41,6 +42,7 @@ def update_task(Tasks):
                 break
     return Tasks
 
+
 def delete_task(Tasks): 
     '''
     Delete a specific task.
@@ -49,10 +51,12 @@ def delete_task(Tasks):
         print("No tasks assigned, nothing to delete")
     else:
         list_tasks(Tasks)
-
+        
         task_no = input("Which task do you wish to delete, Task number: ")
         del Tasks[task_no]
+
     return Tasks
+
 
 def list_tasks(Tasks):
     '''
