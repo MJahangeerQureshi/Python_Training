@@ -1,6 +1,6 @@
 from A1 import create_task, update_task, delete_task, list_tasks
 
-Tasks={}
+Tasks=[]
 
 while True:
     try:
