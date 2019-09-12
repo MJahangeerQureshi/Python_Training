@@ -1,21 +1,39 @@
 from rest_framework import serializers
 from rest_auth.registration.serializers import RegisterSerializer
 
-import datetime
-
 from .models import TwitterUser, Tweet, Follower
 
+import datetime
 
-class TweetSerializer(serializers.HyperlinkedModelSerializer):
+
+from rest_framework.serializers import ModelSerializer
+
+# class FollowerSerializer(ModelSerializer):
+    
+#     class Meta(object):
+#         model = Follower
+        
+#         fields = '__all__' 
+
+
+# class TweetSerializer(ModelSerializer):
+#     user = FollowerSerializer(many=True) #TypeError at /tweets/ \ 'TwitterUser' object is not iterable
+#     # user = FollowerSerializer() #AttributeError at /tweets/ \ 'RelatedManager' object has no attribute 'pk'
+#     class Meta(object):
+#         model = Tweet
+
+#         fields = '__all__' 
+
+class FollowerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follower
+        fields = ('id', 'user', 'followers')
+
+
+class TweetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tweet
         fields = ('id', 'url', 'tweet', 'user')
-
-
-class FollowerSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Follower
-        fields = ('id', 'url', 'user', 'followers')
 
 
 class TwitterUserSerializer(serializers.HyperlinkedModelSerializer):

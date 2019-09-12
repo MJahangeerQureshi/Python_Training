@@ -18,7 +18,7 @@ class TwitterUser(AbstractUser):
 
 class Follower(models.Model):
     user = models.ForeignKey(TwitterUser, related_name='twitter_user', on_delete=models.CASCADE)
-    followers = models.ForeignKey(TwitterUser, related_name='twitter_followers', on_delete=models.CASCADE)
+    followers = models.ManyToManyField(TwitterUser, related_name='twitter_followers')
 
 
 class Tweet(models.Model):
