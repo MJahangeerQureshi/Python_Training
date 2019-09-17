@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '2eo6kf-61m8l%eb$j3o*&5#6#9!)y@zcw^_jhu&dp%)b#=+q*u'
+SECRET_KEY = '7kn0)ko68zqfs=0oiv6q9&zr@avi78ihjk37!g-*wois+6=$fq'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,13 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'tweets',
     'rest_framework.authtoken',
-    'rest_auth',
-    'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'rest_auth.registration',
+    'users',
+    'tweets',
 ]
 
 MIDDLEWARE = [
@@ -127,12 +123,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-AUTH_USER_MODEL = 'tweets.TwitterUser'
-
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated', )
+  'DEFAULT_AUTHENTICATION_CLASSES': (
+      'rest_framework.authentication.TokenAuthentication',
+    )
 }

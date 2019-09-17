@@ -1,39 +1,37 @@
 from django.db import models
-from django.conf import settings
-from django.contrib.auth.models import AbstractUser
-import datetime
-
-
-class TwitterUser(AbstractUser):
-    username = models.CharField(max_length=100, unique=True, default='@NOT_PROVIDED')
-    email = models.EmailField('email address', unique=True)
-    name = models.CharField(max_length=100)
-    date_of_birth = models.DateField(default=datetime.date.today)
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email','password']
-
-    def __str__(self):
-        return self.username
-
-
-class Follower(models.Model):
-    user = models.ForeignKey(TwitterUser, related_name='twitter_user', on_delete=models.CASCADE)
-    followers = models.ManyToManyField(TwitterUser, related_name='twitter_followers')
-
-
+from django.contrib.auth.models import User as TwitterUser
+ 
 class Tweet(models.Model):
+    """
+    This a class for the Follower model
+    it declare the following fields.
+
+    tweet : A CharField with a max length of 280 characters.
+    username : A CharField with a max length of 280 characters set to be unique
+    user : A ForeignKey to the twitter user model.
+    """
     tweet = models.CharField(max_length=280)
+    username = models.CharField(max_length=150, unique=True, null=True) # to make viewing a tweet somewhat intuitive
     user = models.ForeignKey(TwitterUser, related_name='user', on_delete=models.CASCADE)
     
     def __str__(self):
         return self.tweet
 
+class Follower(models.Model):
+    """
+    This a class for the Follower model
+    it declare the following fields.
 
-# 1  signup / sign in / signout  - Done
-# 2. The user can post a tweet. - Done
-# 3. User can view profiles of other users. - Done 
-# 4. The user can follow other users - Done
-# 5. User can search other users - Done (falacy: No login required)
-# 6. User can update his profile. e.g name etc - Done
+    user : A ForeignKey to the twitter user model.
+    followers : A ManyToManyField with the twitter user model.
+    """
+    username = models.CharField(max_length=150, null=True)      # to make viewing a follower 
+    followername = models.CharField(max_length=150, null=True)  # somewhat intuitive
+     
 
-# 7. The user can view tweets or updates set by the users he follows. - ToDo
+    user = models.ForeignKey(TwitterUser, related_name='twitter_user', on_delete=models.CASCADE, null=True)
+    followers = models.ForeignKey(TwitterUser, related_name='twitter_followers', on_delete=models.CASCADE, null=True)
+    
+    def __str__(self):
+        return self.username
+
