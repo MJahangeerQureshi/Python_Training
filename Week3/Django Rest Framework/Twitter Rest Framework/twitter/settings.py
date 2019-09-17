@@ -128,3 +128,5 @@ REST_FRAMEWORK = {
       'rest_framework.authentication.TokenAuthentication',
     )
 }
+
+TOKEN_EXPIRED_AFTER_DAYS = 1

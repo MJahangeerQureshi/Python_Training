@@ -1,17 +1,43 @@
+import json
+from datetime import datetime, date, timedelta
+
 import django
+from django.conf import settings
 from django.contrib.auth.models import User as TwitterUser # Our user model
 from django.contrib.auth.hashers import check_password # to check the user plaintext password against the users hashed
                                                        # password
-
 from rest_framework import viewsets, permissions, status 
 from rest_framework.views import APIView # A default view
 from rest_framework.authentication import TokenAuthentication # To setup token Authentication
 from rest_framework.response import Response # To send back Http responses
 from rest_framework.authtoken.models import Token # To generate a token during signup
 
-import json
-
 from .serializers import TwitterUserSerializer, TwitterUserSerializerForUsers
+
+def is_token_expired(request):
+    """
+    Checks to see if token has expired
+
+    The post function creates a new user and assigns it a Token
+
+    Parameters: 
+    request : the request from the user 
+    format : the format of the request
+
+    Returns: 
+    Response (dictionary) : the created user instance
+    """
+    expiration_duration = timedelta(settings.TOKEN_EXPIRED_AFTER_DAYS)
+    token_creation_date = date(request.user.auth_token.created.year,
+                            request.user.auth_token.created.month,
+                            request.user.auth_token.created.day)
+    current_date = date(datetime.now().year,datetime.now().month,datetime.now().day)
+                    
+    if (current_date - token_creation_date) >= (expiration_duration):
+        return True
+    else:
+        return False
+
 
 class UserView(viewsets.ModelViewSet):
     """ 
@@ -39,19 +65,23 @@ class UserView(viewsets.ModelViewSet):
         Returns: 
         Response (list) : A list of all the users 
         """
-        serializer = self.get_serializer(self.queryset, many=True)
-        response = []
-        for user in serializer.data:
-            if str(request.user) == user['username']: # Check if the user is the requesting user
-                response.append({
-                    "username":user['username'],      # if yes, add email
-                    "email":user['email']
-                })
-            else:
-                response.append({
-                    "username":user['username']       # if no, ignore email
-                })
-        return Response(response)
+        if is_token_expired(request):
+            request.user.auth_token.delete()
+            return Response("Your session has expired you will need to login again")
+        else:
+            serializer = self.get_serializer(self.queryset, many=True)
+            response = []
+            for user in serializer.data:
+                if str(request.user) == user['username']: # Check if the user is the requesting user
+                    response.append({
+                        "username":user['username'],      # if yes, add email
+                        "email":user['email']
+                    })
+                else:
+                    response.append({
+                        "username":user['username']       # if no, ignore email
+                    })
+            return Response(response)
     
     def retrieve(self, request, username):
         """
@@ -66,18 +96,22 @@ class UserView(viewsets.ModelViewSet):
         Returns: 
         Response (dictionary) : the requested user instance
         """
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        user = serializer.data
-
-        if username == user['username']:              # Check if the user is the requesting user
-            response = { "username":user['username'],
-                            "email":user['email']     # if yes, add email
-                            }
+        if is_token_expired(request):
+            request.user.auth_token.delete()
+            return Response("Your session has expired you will need to login again")
         else:
-            response = {"username":user['username']}  # if no, ignore email
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            user = serializer.data
 
-        return Response(response)
+            if username == user['username']:              # Check if the user is the requesting user
+                response = { "username":user['username'],
+                                "email":user['email']     # if yes, add email
+                                }
+            else:
+                response = {"username":user['username']}  # if no, ignore email
+
+            return Response(response)
 
 class UserCreate(APIView):
     """ 
@@ -92,6 +126,7 @@ class UserCreate(APIView):
         - Email not provided
         - Invalid email format
     """
+
     def post(self, request, format='json'):
         """
         Creates a new User instance
@@ -110,10 +145,10 @@ class UserCreate(APIView):
             user = serializer.save()
             if user:
                 token = Token.objects.create(user=user) # Creating a new token for the user
-                json = serializer.data                  # essentially signing him in
-                json['token'] = token.key
+                data = serializer.data                  # essentially signing him in
+                data['token'] = token.key
                 print(token.key)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response(data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

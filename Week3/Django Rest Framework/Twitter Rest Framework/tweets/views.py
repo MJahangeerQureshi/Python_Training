@@ -1,3 +1,6 @@
+from datetime import datetime, date, timedelta
+
+from django.conf import settings
 from django.contrib.auth.models import User as TwitterUser
 
 from rest_framework import viewsets, permissions, status 
@@ -6,10 +9,32 @@ from rest_framework.authentication import TokenAuthentication # To setup token A
 from rest_framework.response import Response # To send back Http responses
 from rest_framework.authtoken.models import Token # To generate a token during signup
 
-
 from .models import Tweet, Follower
 from .serializers import TweetSerializer, FollowerSerializer
 
+def is_token_expired(request):
+    """
+    Checks to see if token has expired
+
+    The post function creates a new user and assigns it a Token
+
+    Parameters: 
+    request : the request from the user 
+    format : the format of the request
+
+    Returns: 
+    Response (dictionary) : the created user instance
+    """
+    expiration_duration = timedelta(settings.TOKEN_EXPIRED_AFTER_DAYS)
+    token_creation_date = date(request.user.auth_token.created.year,
+                            request.user.auth_token.created.month,
+                            request.user.auth_token.created.day)
+    current_date = date(datetime.now().year,datetime.now().month,datetime.now().day)
+                    
+    if (current_date - token_creation_date) >= (expiration_duration):
+        return True
+    else:
+        return False
 
 class TweetView(viewsets.ModelViewSet):
     """ 
@@ -23,7 +48,7 @@ class TweetView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated] 
 
     lookup_field = 'username' # set the lookup to be the username for ease of use
-
+    
     def create(self, request):
         """
         To prevent creating a new entry via post
@@ -50,6 +75,7 @@ class TweetView(viewsets.ModelViewSet):
         Returns: 
         Response (list) : A list of tweets 
         """
+        followers = Follower.objects.all()
         requesting_user = str(request.user)
         response = []
 
@@ -76,8 +102,12 @@ class TweetView(viewsets.ModelViewSet):
         Returns: 
         Response (list) : A list of tweets 
         """
-        serializer = self.get_serializer(self.get_queryset(), many=True)
-        return Response(self.response_based_on_currentuser(serializer, request))
+        if is_token_expired(request):
+            request.user.auth_token.delete()
+            return Response("Your session has expired you will need to login again")
+        else:
+            serializer = self.get_serializer(self.get_queryset(), many=True)
+            return Response(self.response_based_on_currentuser(serializer, request))
     
     def retrieve(self, request, username):
         """
@@ -93,9 +123,13 @@ class TweetView(viewsets.ModelViewSet):
         Returns: 
         Response (list) : A list of tweets 
         """
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(self.response_based_on_currentuser(serializer, request))
+        if is_token_expired(request):
+            request.user.auth_token.delete()
+            return Response("Your session has expired you will need to login again")
+        else:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance)
+            return Response(self.response_based_on_currentuser(serializer, request))
 
 
 class CreateTweet(APIView):
@@ -120,20 +154,24 @@ class CreateTweet(APIView):
         Returns: 
         Response (list) : The Posted Tweet 
         """
-        try:
-            serializer_data = {
-                "user":request.user.id,
-                "username":str(request.user),    # add user and username based on info from request
-                "tweet":request.data['tweet']
-            }
-            serializer = TweetSerializer(data=serializer_data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors)
-        except KeyError:
-            return Response('System_Message : Please pass the tweet you wish to post')
+        if is_token_expired(request):
+            request.user.auth_token.delete()
+            return Response("Your session has expired you will need to login again")
+        else:
+            try:
+                serializer_data = {
+                    "user":request.user.id,
+                    "username":str(request.user),    # add user and username based on info from request
+                    "tweet":request.data['tweet']
+                }
+                serializer = TweetSerializer(data=serializer_data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response(serializer.errors)
+            except KeyError:
+                return Response('System_Message : Please pass the tweet you wish to post')
 
 class CreateFollower(APIView):
     """ 
@@ -177,27 +215,31 @@ class CreateFollower(APIView):
         Returns: 
         Response : the created follower instance 
         """
-        users_model = TwitterUser.objects.all()
-        for user_model in users_model:
-            try:
-                if str(user_model.username) == request.data['follow']:
-                    if self.check_if_already_following(request, user_model): # if already following pass this message
-                        return Response('System_Message : You are already following this User')        
-                    else:                                                    # pass the new follower instance
-                        serializer_data = {                                  
-                                "user":user_model.id,
-                                "username":request.data['follow'], 
-                                "followers":request.user.id,        # add follower name based on info from request
-                                "followername":str(request.user),
-                            }
-                        serializer = FollowerSerializer(data=serializer_data)
-                        if serializer.is_valid():
-                            print('serializer is valid')
-                            serializer.save()
-                            return Response(serializer.data, status=status.HTTP_201_CREATED)
-                        else:
-                            return Response(serializer.errors)
-            except KeyError:
-                return Response('System_Message : Please pass the follower names')
-            
-        return Response('System_Message : No user with such a username exists')
+        if is_token_expired(request):
+            request.user.auth_token.delete()
+            return Response("Your session has expired you will need to login again")
+        else:
+            users_model = TwitterUser.objects.all()
+            for user_model in users_model:
+                try:
+                    if str(user_model.username) == request.data['follow']:
+                        if self.check_if_already_following(request, user_model): # if already following pass this message
+                            return Response('System_Message : You are already following this User')        
+                        else:                                                    # pass the new follower instance
+                            serializer_data = {                                  
+                                    "user":user_model.id,
+                                    "username":request.data['follow'], 
+                                    "followers":request.user.id,        # add follower name based on info from request
+                                    "followername":str(request.user),
+                                }
+                            serializer = FollowerSerializer(data=serializer_data)
+                            if serializer.is_valid():
+                                print('serializer is valid')
+                                serializer.save()
+                                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                            else:
+                                return Response(serializer.errors)
+                except KeyError:
+                    return Response('System_Message : Please pass the follower names')
+                
+            return Response('System_Message : No user with such a username exists')
